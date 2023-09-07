@@ -22,9 +22,7 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 2 {
-			log.Fatal("Please enter a customer name and email")
-		}
+
 		db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/flourish")
 		defer db.Close()
 
@@ -32,8 +30,18 @@ to quickly create a Cobra application.`,
 			log.Fatal(err)
 		}
 
-		var customerName = args[0]
-		var customerEmail = args[1]
+		customerName, _ := cmd.Flags().GetString("name")
+		customerEmail, _ := cmd.Flags().GetString("email")
+
+		if customerName == "" && customerEmail == "" {
+			log.Fatal("Please enter a customer name and email")
+		} else if customerName == "" {
+			log.Fatal("Please enter a customer name")
+		} else if customerEmail == "" {
+			log.Fatal("Please enter a customer email")
+
+		}
+
 		sql := "INSERT INTO customer(name, email) VALUES (?, ?)"
 		results, err := db.ExecContext(context.Background(), sql, customerName, customerEmail)
 
@@ -52,6 +60,8 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(insertCustomerCmd)
+	insertCustomerCmd.PersistentFlags().String("name", "", "Customer Name")
+	insertCustomerCmd.PersistentFlags().String("email", "", "Customer Email")
 
 	// Here you will define your flags and configuration settings.
 

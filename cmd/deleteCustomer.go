@@ -7,10 +7,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
-	"strconv"
-
 	"github.com/spf13/cobra"
+	"log"
 )
 
 // deleteCustomerCmd represents the deleteCustomer command
@@ -24,11 +22,11 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 1 {
-			log.Fatal("Please enter a customer id to delete for")
-		} else if len(args) > 1 {
-			log.Fatal("Please enter a single id")
-		}
+		//if len(args) < 1 {
+		//	log.Fatal("Please enter a customer id to delete for")
+		//} else if len(args) > 1 {
+		//	log.Fatal("Please enter a single id")
+		//}
 		db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/flourish")
 		defer db.Close()
 
@@ -36,10 +34,10 @@ to quickly create a Cobra application.`,
 			log.Fatal(err)
 		}
 
-		customerID, err := strconv.Atoi(args[0])
+		customerId, _ := cmd.Flags().GetInt("customerId")
 		sqlOrder := "DELETE FROM `order`WHERE customer_id = ?"
 
-		resultsOrder, err := db.ExecContext(context.Background(), sqlOrder, customerID)
+		resultsOrder, err := db.ExecContext(context.Background(), sqlOrder, customerId)
 
 		// Get the data
 		if err != nil {
@@ -53,7 +51,7 @@ to quickly create a Cobra application.`,
 		}
 		fmt.Printf("Deleted %d rows from orders\n", affectedRowsOrder)
 		sqlCustomer := "DELETE FROM customer WHERE id = ?"
-		resultsCustomer, err := db.ExecContext(context.Background(), sqlCustomer, customerID)
+		resultsCustomer, err := db.ExecContext(context.Background(), sqlCustomer, customerId)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -69,6 +67,7 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(deleteCustomerCmd)
+	deleteCustomerCmd.PersistentFlags().Int("customerId", 0, "Customer id")
 
 	// Here you will define your flags and configuration settings.
 

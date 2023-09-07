@@ -6,10 +6,8 @@ package cmd
 import (
 	"database/sql"
 	"fmt"
-	"log"
-	"strconv"
-
 	"github.com/spf13/cobra"
+	"log"
 )
 
 // getOrderByIDCmd represents the getOrderByID command
@@ -23,11 +21,11 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 1 {
-			log.Fatal("Please enter an order id to search for")
-		} else if len(args) > 1 {
-			log.Fatal("Please enter a single id")
-		}
+		//if len(args) < 1 {
+		//	log.Fatal("Please enter an order id to search for")
+		//} else if len(args) > 1 {
+		//	log.Fatal("Please enter a single id")
+		//}
 		db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/flourish")
 		defer db.Close()
 
@@ -35,11 +33,11 @@ to quickly create a Cobra application.`,
 			log.Fatal(err)
 		}
 
-		orderID, err := strconv.Atoi(args[0])
+		orderId, _ := cmd.Flags().GetInt("orderId")
 
-		results, err := db.Query("SELECT * FROM `order` WHERE id = ?", orderID)
+		results, err := db.Query("SELECT * FROM `order` WHERE id = ?", orderId)
 
-		fmt.Printf("Trying to get order ID: %d\n", orderID)
+		fmt.Printf("Trying to get order ID: %d\n", orderId)
 
 		// Get the data
 		if err != nil {
@@ -64,6 +62,7 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(getOrderByIDCmd)
+	getOrderByIDCmd.PersistentFlags().Int("orderId", 0, "Order id")
 
 	// Here you will define your flags and configuration settings.
 

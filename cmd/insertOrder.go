@@ -23,21 +23,22 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 3 {
-			log.Fatal("Please enter a customer id, quantity and total price")
-		}
+		// add check for flag values.
+		// customerId 0 should fail?
+		// quantity 0 should fail
+		// can you have a totalPrice of 0?
 		db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/flourish")
 		defer db.Close()
 
 		if err != nil {
 			log.Fatal(err)
 		}
+		customerId, _ := cmd.Flags().GetInt("customerId")
+		quantity, _ := cmd.Flags().GetInt("quantity")
+		totalPrice, _ := cmd.Flags().GetInt("totalPrice")
 
-		var customer_Id = args[0]
-		var qty_Ordered = args[1]
-		var total_Price = args[2]
 		sql := "INSERT INTO `order`(customer_id, date, qty_ordered, total_price) VALUES (?, NOW(), ?, ?)"
-		results, err := db.ExecContext(context.Background(), sql, customer_Id, qty_Ordered, total_Price)
+		results, err := db.ExecContext(context.Background(), sql, customerId, quantity, totalPrice)
 
 		// Get the data
 		if err != nil {
@@ -48,13 +49,15 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			log.Fatalf("impossible to retrieve last inserted id: %s", err)
 		}
-		fmt.Println("inserted order id: %d", id)
+		fmt.Printf("inserted order id: %d\n", id)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(insertOrderCmd)
-
+	insertOrderCmd.PersistentFlags().Int("customerId", 0, "Customer id")
+	insertOrderCmd.PersistentFlags().Int("quantity", 0, "Quantity")
+	insertOrderCmd.PersistentFlags().Int("totalPrice", 0, "Total Price")
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command

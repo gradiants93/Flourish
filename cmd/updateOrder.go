@@ -23,9 +23,9 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 5 {
-			log.Fatal("Please enter an order id, customer id, date, quantity and total price")
-		}
+		//if len(args) != 5 {
+		//	log.Fatal("Please enter an order id, customer id, date, quantity and total price")
+		//}
 		db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/flourish")
 		defer db.Close()
 
@@ -33,13 +33,13 @@ to quickly create a Cobra application.`,
 			log.Fatal(err)
 		}
 
-		var order_Id = args[0]
-		var customer_Id = args[1]
-		var date = args[2]
-		var qty_Ordered = args[3]
-		var total_Price = args[4]
+		orderId, _ := cmd.Flags().GetInt("orderId")
+		customerId, _ := cmd.Flags().GetInt("customerId")
+		date, _ := cmd.Flags().GetString("date")
+		quantity, _ := cmd.Flags().GetInt("quantity")
+		totalPrice, _ := cmd.Flags().GetInt("totalPrice")
 
-		resultsCustomer, err := db.Query("SELECT * FROM customer WHERE id = ?", customer_Id)
+		resultsCustomer, err := db.Query("SELECT * FROM customer WHERE id = ?", customerId)
 
 		// Get the data
 		if err != nil {
@@ -47,7 +47,7 @@ to quickly create a Cobra application.`,
 		}
 		if resultsCustomer.Next() {
 			sql := "UPDATE `order` SET customer_id = ?, date = ?, qty_ordered = ?, total_price = ? WHERE id = ?"
-			results, err := db.ExecContext(context.Background(), sql, customer_Id, date, qty_Ordered, total_Price, order_Id)
+			results, err := db.ExecContext(context.Background(), sql, customerId, date, quantity, totalPrice, orderId)
 
 			// Get the data
 			if err != nil {
@@ -62,14 +62,18 @@ to quickly create a Cobra application.`,
 			fmt.Printf("Updated %d rows\n", affectedRows)
 		} else {
 
-			fmt.Printf("Customer %s does not exist", customer_Id)
+			fmt.Printf("Customer %d does not exist", customerId)
 		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(updateOrderCmd)
-
+	updateOrderCmd.PersistentFlags().Int("orderId", 0, "Order id")
+	updateOrderCmd.PersistentFlags().Int("customerId", 0, "Customer id")
+	updateOrderCmd.PersistentFlags().String("date", "2000-01-01", "Date - YYYY-MM-DD")
+	updateOrderCmd.PersistentFlags().Int("quantity", 0, "Quantity")
+	updateOrderCmd.PersistentFlags().Int("totalPrice", 0, "Total Price")
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command

@@ -23,9 +23,7 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 3 {
-			log.Fatal("Please enter a customer id, name and email")
-		}
+
 		db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/flourish")
 		defer db.Close()
 
@@ -33,9 +31,19 @@ to quickly create a Cobra application.`,
 			log.Fatal(err)
 		}
 
-		var customerId = args[0]
-		var customerName = args[1]
-		var customerEmail = args[2]
+		customerId, _ := cmd.Flags().GetInt("customerId")
+		customerName, _ := cmd.Flags().GetString("name")
+		customerEmail, _ := cmd.Flags().GetString("email")
+
+		if customerName == "" && customerEmail == "" {
+			log.Fatal("Please enter a customer name and email")
+		} else if customerName == "" {
+			log.Fatal("Please enter a customer name")
+		} else if customerEmail == "" {
+			log.Fatal("Please enter a customer email")
+
+		}
+
 		sql := "UPDATE customer SET name=?, email=? WHERE id=?"
 		results, err := db.ExecContext(context.Background(), sql, customerName, customerEmail, customerId)
 
@@ -55,6 +63,10 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(updateCustomerCmd)
+
+	updateCustomerCmd.PersistentFlags().Int("customerId", 0, "Customer id")
+	updateCustomerCmd.PersistentFlags().String("name", "", "Customer Name")
+	updateCustomerCmd.PersistentFlags().String("email", "", "Customer Email")
 
 	// Here you will define your flags and configuration settings.
 

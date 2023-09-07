@@ -9,11 +9,10 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/spf13/cobra"
 	"log"
-	"strconv"
 )
 
 // getCmd represents the get command
-var getCmd = &cobra.Command{
+var getCustomerCmd = &cobra.Command{
 	Use:   "getCustomer",
 	Short: "Gets customer info via id",
 	Long: `A longer description that spans multiple lines and likely contains examples
@@ -23,11 +22,7 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 1 {
-			log.Fatal("Please enter a customer id to search for")
-		} else if len(args) > 1 {
-			log.Fatal("Please enter a single id")
-		}
+		// add check for value in flag. If 0 then should fail?
 		db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/flourish")
 		defer db.Close()
 
@@ -35,11 +30,11 @@ to quickly create a Cobra application.`,
 			log.Fatal(err)
 		}
 
-		customerID, err := strconv.Atoi(args[0])
+		customerId, _ := cmd.Flags().GetInt("customerId")
 
-		results, err := db.Query("SELECT * FROM customer WHERE id = ?", customerID)
+		results, err := db.Query("SELECT * FROM customer WHERE id = ?", customerId)
 
-		fmt.Printf("Trying to get customer ID: %d\n", customerID)
+		fmt.Printf("Trying to get customer ID: %d\n", customerId)
 
 		// Get the data
 		if err != nil {
@@ -63,7 +58,8 @@ to quickly create a Cobra application.`,
 }
 
 func init() {
-	rootCmd.AddCommand(getCmd)
+	rootCmd.AddCommand(getCustomerCmd)
+	getCustomerCmd.PersistentFlags().Int("customerId", 0, "Customer id")
 
 	// Here you will define your flags and configuration settings.
 

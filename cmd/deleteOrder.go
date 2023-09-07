@@ -7,10 +7,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
-	"strconv"
-
 	"github.com/spf13/cobra"
+	"log"
 )
 
 // deleteOrderCmd represents the deleteOrder command
@@ -24,11 +22,11 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 1 {
-			log.Fatal("Please enter an order id to delete")
-		} else if len(args) > 1 {
-			log.Fatal("Please enter a single id")
-		}
+		//if len(args) < 1 {
+		//	log.Fatal("Please enter an order id to delete")
+		//} else if len(args) > 1 {
+		//	log.Fatal("Please enter a single id")
+		//}
 		db, err := sql.Open("mysql", "root:@tcp(127.0.0.1:3306)/flourish")
 		defer db.Close()
 
@@ -36,10 +34,10 @@ to quickly create a Cobra application.`,
 			log.Fatal(err)
 		}
 
-		orderID, err := strconv.Atoi(args[0])
+		orderId, _ := cmd.Flags().GetInt("orderId")
 		sql := "DELETE FROM `order`WHERE id = ?"
 
-		results, err := db.ExecContext(context.Background(), sql, orderID)
+		results, err := db.ExecContext(context.Background(), sql, orderId)
 
 		// Get the data
 		if err != nil {
@@ -57,6 +55,7 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(deleteOrderCmd)
+	deleteOrderCmd.PersistentFlags().Int("orderId", 0, "Order id")
 
 	// Here you will define your flags and configuration settings.
 
